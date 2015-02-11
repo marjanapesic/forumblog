@@ -53,7 +53,7 @@
     </div>
 
     <!-- show controls -->
-    <?php //$this->widget('application.modules_core.wall.widgets.WallEntryAddonWidget', array('object' => $object)); ?>
+    <?php $this->widget('application.modules_core.wall.widgets.WallEntryAddonWidget', array('object' => $object)); ?>
 </div>
 
 

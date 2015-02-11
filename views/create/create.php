@@ -33,6 +33,7 @@
             <?php echo $form->textField($model, 'space', array('class' => 'form-control', 'id' => 'space_select')); ?>
             <?php
             $this->widget('application.modules_core.space.widgets.SpacePickerWidget', array(
+                'spaceSearchUrl' => $this->createUrl('//forumblog/forum/searchSpace', array('keyword' => '-keywordPlaceholder-', 'guid'=>Yii::app()->user->guid)),
                 'inputId' => 'space_select',
                 'model' => $model,
                 'attribute' => 'space',

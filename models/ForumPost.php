@@ -17,6 +17,8 @@
 class ForumPost extends HActiveRecordContent
 {
     public $autoAddToWall = false;
+    public $editRoute = '//forumblog/forum/editPost';
+    
     /**
      * Returns the static model of the specified AR class.
      * @param string $className active record class name.
@@ -58,6 +60,13 @@ class ForumPost extends HActiveRecordContent
         );
     }
     
+    
+    public function getContentTitle()
+    {
+        return Yii::app()->getController()->widget('application.modules_core.post.widgets.PostWidget', array('post' => $this), true);
+        /*return Yii::t('ForumBlogModule.models_ForumPost', 'Forum Post') . " \"" . Helpers::truncateText($this->message, 60) . "\" ".
+                Yii::t('ForumBlogModule.models_ForumPost', 'on topic')." ".$this->topic->title;*/
+    }
    
 
 }

@@ -63,8 +63,10 @@ class CreateController extends Controller
 
                 $forumTopic = new ForumTopic();
                 $forumTopic->title = $model->title;
-                $space = Space::model()->findByAttributes(array('guid' => $model->space));
-                $forumTopic->space_id = $space->id;
+                if($model->space){
+                    $space = Space::model()->findByAttributes(array('guid' => $model->space));
+                    $forumTopic->space_id = $space->id;
+                }
                 $forumTopic->save();
                 
                 $forumPost = new ForumPost();

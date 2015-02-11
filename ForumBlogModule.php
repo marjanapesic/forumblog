@@ -50,6 +50,10 @@ class ForumBlogModule extends HWebModule
         )
         );
         
+        $event->sender->addWidget('application.modules.forumblog.widgets.EditLinkWidget', array(
+            'object' => $event->sender->object
+        )
+        );
     }
 
  
