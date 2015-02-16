@@ -3,7 +3,7 @@
 /**
  * Forum Controller
  *
- * @package humhub.modules.forumblog.controllers
+ * @package humhub.modules.forum.controllers
  * @author Marjana Pesic
  */
 class ForumController extends Controller
@@ -36,163 +36,130 @@ class ForumController extends Controller
                 'users' => array('*'),
             ),
         );
-    }
-
+    }    
     
-    public function actionIndex(){
-  
-        $topicsPerPage = 10;
-        
-        // Current page
-        $page = (int) Yii::app()->request->getParam('page', 1);
-     
-        $spaces = array();
-        $allUserSpaces = SpaceMembership::GetUserSpaces(Yii::app()->user->id);
-        foreach($allUserSpaces as $userSpace){
-            $spaces[] = $userSpace->id;
+    //crete topic and first post
+    public function actionCreate()
+    {
+        $model = new CreateForumTopicForm();
+        // $guid = (int) Yii::app()->request->getQuery('guid');
+    
+        /* $topic = ForumTopic::model()->findByAttributes(array('guid' => $guid));
+         if ($topic === null) {
+         $topic = new ForumTopic();
+         }
+    
+         if (!$topic->canAdminister()) {
+         throw new CHttpException(403, 'Page not editable!');
+        }*/
+    
+    
+        if (isset($_POST['ajax']) && $_POST['ajax'] === 'forum-topic-create-form') {
+            echo CActiveForm::validate($model);
+            Yii::app()->end();
         }
-        $spaces = implode(",",$spaces);
-        
-        //needs to be criteria
-        $sql = "SELECT forum_topic.*
-		FROM forum_topic
-		LEFT JOIN forum_post on forum_post.forum_topic_id = forum_topic.id
-        WHERE  forum_topic.space_id in (". $spaces.") OR isnull(forum_topic.space_id) GROUP BY forum_topic.id";
-        
-        $userTopicsCount = ForumTopic::model()->count("t.space_id in (". $spaces.") OR isnull(t.space_id)");
-
-        $sql .= " ORDER BY forum_topic.updated_at DESC
-        
-		LIMIT " . intval(($page - 1) * $topicsPerPage) . "," . intval($topicsPerPage)." ";
-
-        $userTopics = ForumTopic::model()->findAllBySql($sql);
-        
-        $pages = new CPagination($userTopicsCount);
-        $pages->setPageSize($topicsPerPage);
-        
-        $this->render('index', array(
-            'userTopics' => $userTopics,
-            'topicCount' => $userTopicsCount,
-            'pageSize' => $topicsPerPage,
-            'pages' => $pages
-        ));
-   
+    
+        if (isset($_POST['CreateForumTopicForm'])) {
+    
+            $model->attributes = $_POST['CreateForumTopicForm'];
+    
+            if ($model->validate()) {
+    
+                $topic = new ForumTopic();
+                $topic->title = $model->title;
+                if($model->space){
+                    $space = Space::model()->findByAttributes(array('guid' => $model->space));
+                    $topic->space_id = $space->id;
+                }
+                $topic->save();
+    
+                $forumPost = new ForumPost();
+                $forumPost->forum_topic_id = $topic->id;
+                $forumPost->message = $model->message;
+                $forumPost->isFirstPost = 1;
+                if ($topic->space_id == null){
+                    $contentContainer = User::model()->findByAttributes(array('id' => Yii::app()->user->id));
+                    $forumPost->content->visibility=1;
+                }
+                else
+                    $contentContainer = Space::model()->findByAttributes(array('id' => $topic->space_id));
+    
+                $forumPost->content->container = $contentContainer;
+    
+    
+                $forumPost->save();
+    
+                File::attachPrecreated($forumPost, Yii::app()->request->getParam('fileUploaderHiddenGuidField'));
+    
+                // Redirect to the new created Space
+                $this->htmlRedirect($this->createUrl('//forum/index'));
+    
+            }
+        }
+    
+        $this->render('edit', array('model' => $model));
     }
     
-    public function actionTopic(){
+    
+    public function actionDisplayTopic(){
         
         $guid = Yii::app()->request->getQuery('guid');
         
         // Try Load the space
         $forumTopic = ForumTopic::model()->findByAttributes(array('guid' => $guid));
         if ($forumTopic == null)
-            throw new CHttpException(404, Yii::t('ForumBlogModule.controller_ForumController', 'Forum topic not found!'));
+            throw new CHttpException(404, Yii::t('Forum.controller_ForumController', 'Forum topic not found!'));
+        
+        $model = new ForumPost();
+        
+        if (isset($_POST['ForumPost'])) {
+            $_POST['ForumPost'] = Yii::app()->input->stripClean($_POST['ForumPost']);
+            $model->attributes = $_POST['ForumPost'];
+         
+            if ($forumTopic->space_id == null){
+                $contentContainer = User::model()->findByAttributes(array('id' => Yii::app()->user->id));
+                $model->content->visibility=1;
+            }
+            else
+                $contentContainer = Space::model()->findByAttributes(array('id' => $forumTopic->space_id));
+            
+            $model->content->container = $contentContainer;
+            
+            if ($model->validate()) {
+                $model->forum_topic_id = $forumTopic->id;
+                $model->save();
+            }
+        }
         
         $posts = ForumPost::model()->findAllByAttributes(array('forum_topic_id'=> $forumTopic->id));
-        $this->render('topic', array('topic' => $forumTopic, 'posts' => $posts));
-    }
-
-    public function actionSearchSpace()
-    {
-        $keyword = Yii::app()->request->getParam('keyword', ""); // guid of user/workspace
-        $page = (int) Yii::app()->request->getParam('page', 1); // current page (pagination)
-        $limit = (int) Yii::app()->request->getParam('limit', HSetting::Get('paginationSize')); // current page (pagination)
-        $userGuid = Yii::app()->request->getQuery('guid');
-        $keyword = Yii::app()->input->stripClean($keyword);
-        $hitCount = 0;
-        
-        if ($userGuid) {
-            $user = User::model()->findByAttributes(array(
-                'guid' => $userGuid
-            ));
+        foreach($posts as $post){
+            $post->message = $this->parseMarkdown($post->message);   
         }
         
-        if (! isset($user)) {
-            print CJSON::encode(array());
-            Yii::app()->end();
-        }
-        
-        $query = "model:Space ";
-        if (strlen($keyword) > 2) {
-            
-            // Include Keyword
-            if (strpos($keyword, "@") === false) {
-                $keyword = str_replace(".", "", $keyword);
-                $query .= "AND (title:" . $keyword . "* OR tags:" . $keyword . "*)";
-            }
-        }
-        
-        // , $limit, $page
-        $hits = new ArrayObject(HSearch::getInstance()->Find($query));
-        
-        $hitCount = count($hits);
-        
-        // Limit Hits
-        $hits = new LimitIterator($hits->getIterator(), ($page - 1) * $limit, $limit);
-        
-        $json = array();
-        // $json['totalHits'] = $hitCount;
-        // $json['limit'] = $limit;
-        // $results = array();
-        foreach ($hits as $hit) {
-            $doc = $hit->getDocument();
-            $model = $doc->getField("model")->value;
-            
-            if ($model == "Space") {
-                $workspaceId = $doc->getField('pk')->value;
-                $workspace = Space::model()->findByPk($workspaceId);
-                
-                if ($workspace != null) {
-                    $membership = SpaceMembership::model()->findByAttributes(array(
-                        'space_id' => $workspace->id,
-                        'user_id' => $user->id
-                    ));
-                    if ($membership == null || $membership->status != SpaceMembership::STATUS_MEMBER) {
-                        continue;
-                    }
-                    $wsInfo = array();
-                    $wsInfo['guid'] = $workspace->guid;
-                    $wsInfo['title'] = CHtml::encode($workspace->name);
-                    $wsInfo['tags'] = CHtml::encode($workspace->tags);
-                    $wsInfo['image'] = $workspace->getProfileImage()->getUrl();
-                    $wsInfo['link'] = $workspace->getUrl();
-                    // $results[] = $wsInfo;
-                    $json[] = $wsInfo;
-                } else {
-                    Yii::log("Could not load workspace with id " . $userId . " from search index!", CLogger::LEVEL_ERROR);
-                }
-            } else {
-                Yii::log("Got no workspace hit from search index!", CLogger::LEVEL_ERROR);
-            }
-        }
-        // $json['results'] = $results;
-        
-        print CJSON::encode($json);
-        Yii::app()->end();
-    }
+        $model = new ForumPost();
+        $this->render('displayTopic', array('topic' => $forumTopic, 'posts' => $posts, 'model' => $model));
+    } 
     
     
-    public function actionEditPost(){
-        
+    public function actionPostEdit(){
+    
         $id = Yii::app()->request->getParam('id');
-             
-        $edited = false;
+         
         $model = ForumPost::model()->findByPk($id);
-        
+    
         if ($model->content->canWrite()) {
-            
+    
             if (isset($_POST['ForumPost'])) {
                 $_POST['ForumPost'] = Yii::app()->input->stripClean($_POST['ForumPost']);
                 $model->attributes = $_POST['ForumPost'];
                 if ($model->validate()) {
                     $model->save();
-                    
+    
                     // Reload record to get populated updated_at field
                     $model = ForumPost::model()->findByPk($id);
-
-                    
+                    $model->message = $this->parseMarkdown($model->message);
                     // Return the new post
-                    $output = $this->widget('application.modules.forumblog.widgets.ForumPostWidget', array(
+                    $output = $this->widget('application.modules.forum.widgets.ForumPostWidget', array(
                         'post' => $model,
                         'justEdited' => true
                     ), true);
@@ -201,15 +168,65 @@ class ForumController extends Controller
                     return;
                 }
             }
-            
-            $this->renderPartial('editPost', array(
-                'post' => $model,
-                'edited' => $edited,
+    
+            $this->renderPartial('postEdit', array(
+                'model' => $model,
             ), false, true);
         } else {
-            throw new CHttpException(403, Yii::t('ForumBlogModule.controllers_ForumController', 'Access denied!'));
+            throw new CHttpException(403, Yii::t('Forum.controllers_ForumController', 'Access denied!'));
         }
     }
+    
+    
+    public function actionDelete() {
+        
+        // $this->forcePostRequest();
+
+        // Json Array
+        $json = array();
+        $json['success'] = false;
+
+        $model = Yii::app()->request->getParam('model', "");
+        $id = (int) Yii::app()->request->getParam('id');
+
+        $content = Content::get($model, $id);
+
+        if ($content->content->canDelete()) {
+
+            if ($content->delete()) {
+                $json['success'] = true;
+            }            
+
+        }
+
+        echo CJSON::encode($json);
+        Yii::app()->end();
+    }
+    
+    
+    public function actionPreview()
+    {
+        $this->forcePostRequest();
+    
+        $content = Yii::app()->request->getParam('markdown');
+        $markdown = $this->parseMarkdown($content);
+    
+        $this->renderPartial('preview', array('content' => $markdown));
+    }
+    
+    private function parseMarkdown($md)
+    {
+        $parser = new ForumMarkdown();
+        $html = $parser->parse($md);
+    
+        $purifier = new CHtmlPurifier();
+        return $purifier->purify($html);
+    }
+
+    
+    
+    
+    
 }
 
 ?>

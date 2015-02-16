@@ -6,6 +6,7 @@
  * The followings are the available columns in table 'forum_post':
  * @property integer $id
  * @property string $message
+ * @property int $isFirstPost
  * @property string $created_at
  * @property integer $created_by
  * @property string $updated_at
@@ -17,7 +18,8 @@
 class ForumPost extends HActiveRecordContent
 {
     public $autoAddToWall = false;
-    public $editRoute = '//forumblog/forum/editPost';
+    public $editRoute = '//forum/forum/postEdit';
+    public $autoAddToActivity = false;
     
     /**
      * Returns the static model of the specified AR class.
@@ -60,13 +62,29 @@ class ForumPost extends HActiveRecordContent
         );
     }
     
-    
+
     public function getContentTitle()
     {
-        return Yii::app()->getController()->widget('application.modules_core.post.widgets.PostWidget', array('post' => $this), true);
-        /*return Yii::t('ForumBlogModule.models_ForumPost', 'Forum Post') . " \"" . Helpers::truncateText($this->message, 60) . "\" ".
-                Yii::t('ForumBlogModule.models_ForumPost', 'on topic')." ".$this->topic->title;*/
+        //return Yii::app()->getController()->widget('application.modules_core.post.widgets.PostWidget', array('post' => $this), true);
+        return Yii::t('ForumBlogModule.models_ForumPost', 'Forum Post') . " \"" . Helpers::truncateText($this->message, 60) . "\" ".
+                Yii::t('ForumBlogModule.models_ForumPost', '(on topic')." \"".$this->topic->title."\")";
+    }
+    
+  
+    public function afterSave()
+    {
+            
+            parent::afterSave();
+            //$this->content->addToWall($this->topic->wall_id);
     }
    
 
+    public function afterDelete(){
+        if((int)$this->isFirstPost){
+            $topic = ForumTopic::model()->findByPk($this->forum_topic_id);
+            if($topic)
+                $topic->delete();
+        }
+        return parent::afterDelete();
+    }
 }

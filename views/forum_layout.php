@@ -15,7 +15,7 @@
         <li class="dropdown ">
             <a class="dropdown-toggle" data-toggle="dropdown" href="#"><i class="fa fa-angle-down"></i></a>
             <ul class="dropdown-menu pull-right">
-                <?php $this->widget('application.modules.forumblog.widgets.ForumTopicEntryControls', array('object' => $object)); ?>
+                <?php $this->widget('application.modules.forum.widgets.ForumTopicEntryControls', array('object' => $object)); ?>
             </ul>
         </li>
     </ul>
@@ -48,12 +48,12 @@
     <hr/>
 
     <!-- show content -->
-    <div class="content" id="wall_content_<?php echo $object->getUniqueId(); ?>">
+    <div class="content" id="wall_content_<?php echo $object->getUniqueId(); ?>" >
         <?php echo $content; ?>
     </div>
 
     <!-- show controls -->
-    <?php $this->widget('application.modules_core.wall.widgets.WallEntryAddonWidget', array('object' => $object)); ?>
+    <?php //$this->widget('application.modules_core.wall.widgets.WallEntryAddonWidget', array('object' => $object)); ?>
 </div>
 
 

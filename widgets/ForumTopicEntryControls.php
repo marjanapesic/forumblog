@@ -15,6 +15,19 @@ class ForumTopicEntryControls extends StackWidget {
      */
     public $object = null;
 
+    public function init(){
+        
+        $this->addWidget('application.modules.forum.widgets.DeleteLinkWidget', array(
+            'object' => $this->object
+            )
+        );
+        
+        $this->addWidget('application.modules.forum.widgets.EditLinkWidget', array(
+            'object' => $this->object
+            )
+        );
+    }
+    
 }
 
 ?>

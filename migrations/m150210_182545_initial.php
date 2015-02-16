@@ -21,6 +21,7 @@ class m150210_182545_initial extends EDbMigration {
             'id' => 'pk',
             'forum_topic_id' => 'int(11) NOT NULL',
             'message' => 'text NOT NULL',
+            'isFirstPost' => 'tinyint(1) DEFAULT 0',
             'created_at' => 'datetime NOT NULL',
             'created_by' => 'int(11) NOT NULL',
             'updated_at' => 'datetime NOT NULL',

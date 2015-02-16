@@ -17,6 +17,8 @@
  */
 class ForumTopic extends HActiveRecord
 {
+    
+    public $addToActivity = false;
 
     public function behaviors()
     {
@@ -67,6 +69,7 @@ class ForumTopic extends HActiveRecord
             'space' => array(self::BELONGS_TO, 'Space', 'space_id'),
             'createdBy' => array(self::BELONGS_TO, 'User', 'created_by'),
             'updatedBy' => array(self::BELONGS_TO, 'User', 'updated_by'),
+            'wall' => array(self::BELONGS_TO, 'Wall', 'wall_id'),
         );
     }
 
@@ -86,6 +89,22 @@ class ForumTopic extends HActiveRecord
         );
     }
     
+
+   /* public function afterSave() {
+        // Create new wall record for this user
+        $wall = new Wall();
+       
+        $wall->type =  ($this->space_id) ? Wall::TYPE_SPACE : Wall::TYPE_USER;
+        $wall->object_model = 'ForumTopic';
+        $wall->object_id = $this->id;
+        $wall->save();
+    
+        $this->wall_id = $wall->id;
+        $this->wall = $wall;
+        ForumTopic::model()->updateByPk($this->id, array('wall_id' => $wall->id));
+    }*/
+    
+    
     public function getLastEntry() {
     
         $criteria = new CDbCriteria;
@@ -98,7 +117,7 @@ class ForumTopic extends HActiveRecord
 
     public function getUrl($parameters = array())
     {
-        return $this->createUrl('//forumblog/forum/topic', $parameters);
+        return $this->createUrl('//forum/forum/displayTopic', $parameters);
     }
     
     public function createUrl($route, $params = array(), $ampersand = '&')
@@ -113,4 +132,72 @@ class ForumTopic extends HActiveRecord
             return Yii::app()->createUrl($route, $params, $ampersand);
         }
     }
+    
+    
+    public function canWrite($userId = "")
+    {
+
+        if($this->space_id){
+            $space = Space::model()->findByPk($this->space_id);
+            
+            if ($userId == "")
+                $userId = Yii::app()->user->id;
+            return $space->isMemeber($userId);
+        }
+        
+        return true;
+    }
+    
+    public function canRead($userId = "")
+    {
+    
+        if($this->space_id){
+            $space = Space::model()->findByPk($this->space_id);
+    
+            if ($userId == "")
+                $userId = Yii::app()->user->id;
+            return $space->isMemeber($userId);
+        }
+    
+        return true;
+    }
+    
+    
+    public function canAdminister(){
+        
+        if($this->created_by){
+            return $this->created_by == Yii::app()->user->id;
+        }
+        
+        return true;
+    }
+    
+    public function beforeDelete() {
+        
+        $posts = ForumPost::model()->findAllByAttributes(array('forum_topic_id' => $this->id));
+        foreach($posts as $post){
+            $post->delete();
+        }
+        return parent::beforeDelete();
+    }
+    
+    
+   /* public function  createPost() {
+        
+        $post = new ForumPost();
+        $rev->user_id = Yii::app()->user->id;
+        $rev->revision = time();
+        
+        $lastRevision = WikiPageRevision::model()->findByAttributes(array('is_latest' => 1, 'wiki_page_id' => $this->id));
+        if ($lastRevision !== null) {
+            $rev->content = $lastRevision->content;
+        }
+        
+        if (!$this->isNewRecord) {
+            $rev->wiki_page_id = $this->id;
+        }
+        
+        
+        return $rev;
+    }*/
 }

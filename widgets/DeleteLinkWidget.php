@@ -24,7 +24,7 @@ class DeleteLinkWidget extends HWidget {
     public function run() {
         if ($this->object->content->canDelete()) {
             $this->render('deleteLink', array(
-               'model' => $this->object->content->object_model,
+               'model' => $this->object,
                 'id' => $this->object->content->object_id
             ));
        }

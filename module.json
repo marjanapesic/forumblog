@@ -1,7 +1,7 @@
 {
-    "id": "forumblog",
-    "name": "Forum and blog module",
+    "id": "forum",
+    "name": "Forum module",
     "description": "",
-    "keywords": ["forum", "blog"],
+    "keywords": ["forum"],
 	"version": "0.1",
 }

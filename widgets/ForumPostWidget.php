@@ -3,7 +3,6 @@
 /**
  * This widget is used to show a post
  *
- * @package humhub.modules.forumblog.widgets
  * @since 0.5
  */
 class ForumPostWidget extends HWidget
@@ -28,11 +27,9 @@ class ForumPostWidget extends HWidget
      */
     public function run()
     {
-
         $this->render('forumPost', array(
             'post' => $this->post,
             'justEdited' => $this->justEdited
         ));
     }
-
-}?>
+} ?>

@@ -44,7 +44,7 @@ class CreateController extends Controller
     /**
      * Creates a new ForumTopic
      */
-    public function actionCreate()
+  /*  public function actionCreate()
     {
 
         $model = new CreateForumTopicForm();
@@ -72,20 +72,40 @@ class CreateController extends Controller
                 $forumPost = new ForumPost();
                 $forumPost->forum_topic_id = $forumTopic->id;
                 $forumPost->message = $model->message;
-                if ($forumTopic->space_id == null)
+                if ($forumTopic->space_id == null){
                     $contentContainer = User::model()->findByAttributes(array('id' => Yii::app()->user->id));
+                    $forumPost->content->visibility=1;
+                }
                 else
                     $contentContainer = Space::model()->findByAttributes(array('id' => $forumTopic->space_id));
+                
                 $forumPost->content->container = $contentContainer;
+                
+
                 $forumPost->save();
+
                 // Redirect to the new created Space
-                $this->htmlRedirect($this->createUrl('//forumblog/forum'));
+                $this->htmlRedirect($this->createUrl('//forum/index'));
             }
         }
 
         $this->renderPartial('create', array('model' => $model), false, true);
-    }
+    }*/
 
+    /*
+    
+    public function actionView()
+    {
+        $title = Yii::app()->request->getQuery('title');
+    
+        $page = ForumTopic::model()->findByAttributes(array('title' => $title));
+        if ($page !== null) {
+    
+            $this->render('view', array('page' => $page));
+        } else {
+            $this->redirect($this->createUrl('edit', array('title' => $title)));
+        }
+    }*/
 }
 
 ?>
