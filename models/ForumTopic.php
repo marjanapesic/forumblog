@@ -15,11 +15,12 @@
  * @package humhub.modules.forumblog.models
  * @since 0.5
  */
-class ForumTopic extends HActiveRecord
+class ForumTopic extends HActiveRecordContent
 {
     
     public $addToActivity = false;
-
+    public $editRoute = '//forum/forum/topicEdit';
+    
     public function behaviors()
     {
         return array(
@@ -172,13 +173,13 @@ class ForumTopic extends HActiveRecord
         return true;
     }
     
-    public function beforeDelete() {
+    public function afterDelete() {
         
         $posts = ForumPost::model()->findAllByAttributes(array('forum_topic_id' => $this->id));
         foreach($posts as $post){
             $post->delete();
         }
-        return parent::beforeDelete();
+        return parent::afterDelete();
     }
     
     

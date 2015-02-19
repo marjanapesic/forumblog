@@ -14,12 +14,12 @@
 <li>
     <!-- load modal confirm widget -->
     <?php 
-        $firstPostNotice = $model->isFirstPost ? " ".Yii::t('ForumBlog.widgets_views_deleteLink', 'By deleting this post the whole topic will be deleted') : '';
+        //$firstPostNotice = (isset($model->isFirstPost) && $model->isFirstPost) ? " ".Yii::t('ForumBlog.widgets_views_deleteLink', 'By deleting this post the whole topic will be deleted') : '';
         $this->widget('application.widgets.ModalConfirmWidget', array(
         'uniqueID' => 'modal_postdelete_'. $id,
         'linkOutput' => 'a',
-        'title' => Yii::t('ForumBlog.widgets_views_deleteLink', '<strong>Confirm</strong> post deleting'),
-        'message' => Yii::t('ForumBlog.widgets_views_deleteLink', 'Do you really want to delete this post? All likes and comments will be lost!').$firstPostNotice,
+        'title' => $title,
+        'message' => $message,
         'buttonTrue' => Yii::t('ForumBlog.widgets_views_deleteLink', 'Delete'),
         'buttonFalse' => Yii::t('ForumBlog.widgets_views_deleteLink', 'Cancel'),
         'linkContent' => '<i class="fa fa-trash-o"></i> ' . Yii::t('ForumBlog.widgets_views_deleteLink', 'Delete'),

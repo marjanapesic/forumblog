@@ -1,58 +1,58 @@
 // Newly uploaded file
 var newFile = "";
 
-$("#txtWikiPageContent").markdown({
+function addMarkdown(id) {
+	
+$("#pageContent"+id).markdown({
     iconlibrary: 'fa',
     additionalButtons: [
         [{
                 name: "groupCustom",
                 data: [{
-                        name: "cmdLinkWiki",
+                        name: "cmdLink"+id,
                         title: "Add link",
                         icon: {glyph: 'glyphicon glyphicon-link', fa: 'fa fa-link', 'fa-3': 'icon-link'},
                         callback: function(e) {
                             newFile = "";
-                            $('#addLinkModal').modal('show');
-                            $('#addLinkModalUploadForm').show();
-                            $('#addLinkTitle').val(e.getSelection().text);
+                            $('#addLinkModal'+id).modal('show');
+                            $('#addLinkModalUploadForm'+id).show();
+                            $('#addLinkTitle'+id).val(e.getSelection().text);
 
                             // FIXME @Struppi
-                            if ($('#addLinkTitle').val() == "") {
-                                $('#addLinkTitle').focus();
+                            if ($('#addLinkTitle'+id).val() == "") {
+                                $('#addLinkTitle'+id).focus();
                             } else {
-                                $('#addLinkTarget').focus();
+                                $('#addLinkTarget'+id).focus();
                             }
 
-                            $('#addLinkButton').off('click');
-                            $('#addLinkButton').on('click', function() {
-                                chunk = "[" + $('#addLinkTitle').val() + "](" + $('#addLinkTarget').val() + ")";
+                            $('#addLinkButton'+id).off('click');
+                            $('#addLinkButton'+id).on('click', function() {
+                                chunk = "[" + $('#addLinkTitle'+id).val() + "](" + $('#addLinkTarget'+id).val() + ")";
                                 selected = e.getSelection(), content = e.getContent(),
                                         e.replaceSelection(chunk);
                                 cursor = selected.start;
                                 e.setSelection(cursor, cursor + chunk.length);
-                                $('#addLinkModal').modal('hide')
+                                $('#addLinkModal'+id).modal('hide')
                             });
 
-                            $('#addLinkModal').on('hide.bs.modal', function(ee) {
-                                $('#addLinkTitle').val("");
-                                $('#addLinkTarget').val("");
+                            $('#addLinkModal'+id).on('hide.bs.modal', function(ee) {
+                                $('#addLinkTitle'+id).val("");
+                                $('#addLinkTarget'+id).val("");
                             })
                         }
                     },
                     {
-                        name: "cmdImgWiki",
+                        name: "cmdImg"+id,
                         title: "Add image/file",
                         icon: {glyph: 'glyphicon glyphicon-picture', fa: 'fa fa-picture-o', 'fa-3': 'icon-picture'},
                         callback: function(e) {
                             newFile = "";
-                            $('#addImageModal').modal('show');
-                            $('#addImageModalUploadForm').show();
-                            $('#addImageModalProgress').hide();
-                            alert('okl');
-                            $('#addImageModal').on('hide.bs.modal', function(ee) {
-                            	alert('ind');
+                            $('#addImageModal'+id).modal('show');
+                            $('#addImageModalUploadForm'+id).show();
+                            $('#addImageModalProgress'+id).hide();
+                            $('#addImageModal'+id).on('hide.bs.modal', function(ee) {
+                            	
                                 if (newFile != "") {
-                                	alert(newFile.mimeBaseType);
                                     if (newFile.mimeBaseType == "image") {
                                         chunk = "![" + newFile.name + "](file-guid-" + newFile.guid + ")";
                                     } else {
@@ -73,31 +73,31 @@ $("#txtWikiPageContent").markdown({
     onPreview: function(e) {
         $.ajax({
             type: "POST",
-            url: postPreviewUrl,
+            url: window["previewUrl"+id],
             data: {
                 markdown: e.getContent(),
             }
         }).done(function(previewHtml) {
-            $('#markdownpreview').html(previewHtml);
+            $('#markdownpreview'+id).html(previewHtml);
         });
 
-        var previewContent = "<div id='markdownpreview'>Please wait - loading the preview</div>";
+        var previewContent = "<div id='markdownpreview"+id+"'>Please wait - loading the preview</div>";
         return previewContent;
     }
 });
 
-$('#fileUploadProgress').hide();
-$('#fileUploaderButton').fileupload({
+$('#fileUploadProgress'+id).hide();
+$('#fileUploaderButton'+id).fileupload({
     dataType: 'json',
     done: function(e, data) {
         $.each(data.result.files, function(index, file) {
             if (!file.error) {
                 newFile = file;
 
-                hiddenValueField = $('#fileUploaderHiddenGuidField');
+                hiddenValueField = $('#fileUploaderHiddenGuidField'+id);
                 hiddenValueField.val(hiddenValueField.val() + "," + file.guid);
 
-                $('#addImageModal').modal('hide');
+                $('#addImageModal'+id).modal('hide');
             } else {
                 alert("file upload error");
             }
@@ -106,11 +106,12 @@ $('#fileUploaderButton').fileupload({
     progressall: function(e, data) {
         newFile = "";
         var progress = parseInt(data.loaded / data.total * 100, 10);
-        $('#addImageModalUploadForm').hide();
-        $('#addImageModalProgress').show();
+        $('#addImageModalUploadForm'+id).hide();
+        $('#addImageModalProgress'+id).show();
         if (progress == 100) {
-            $('#addImageModalProgress').hide();
-            $('#addImageModalUploadForm').hide();
+            $('#addImageModalProgress'+id).hide();
+            $('#addImageModalUploadForm'+id).hide();
         }
     }
 }).prop('disabled', !$.support.fileInput).parent().addClass($.support.fileInput ? undefined : 'disabled');
+}

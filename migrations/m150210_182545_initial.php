@@ -28,6 +28,31 @@ class m150210_182545_initial extends EDbMigration {
             'updated_by' => 'int(11) NOT NULL',
                 ), '');
 
+        $this->createTable('forum_comment', array(
+            'id' => 'pk',
+            'message' => 'text NOT NULL',
+            'object_id' => 'int(11) NOT NULL',
+            'object_model' => 'varchar(100) NOT NULL',
+            'created_at' => 'datetime NOT NULL',
+            'created_by' => 'int(11) NOT NULL',
+            'updated_at' => 'datetime NOT NULL',
+            'updated_by' => 'int(11) NOT NULL',
+        ), '');
+        
+        $this->createIndex('index_obj', 'object_model', 'object_id', true);
+        
+        $this->createTable('forum_like', array(
+            'id' => 'pk',
+            'object_id' => 'int(11) NOT NULL',
+            'object_model' => 'varchar(100) NOT NULL',
+            'created_at' => 'datetime NOT NULL',
+            'created_by' => 'int(11) NOT NULL',
+            'updated_at' => 'datetime NOT NULL',
+            'updated_by' => 'int(11) NOT NULL',
+        ), '');
+        
+        $this->createIndex('index_obj', 'object_model', 'object_id', true);
+        
     }
 
     public function down() {

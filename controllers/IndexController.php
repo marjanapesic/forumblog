@@ -44,7 +44,7 @@ class IndexController extends Controller
         }
         $spaces = implode(",",$spaces);
     
-        //needs to be criteria
+//needs to be criteria
         $sql = "SELECT forum_topic.*
 		FROM forum_topic
 		LEFT JOIN forum_post on forum_post.forum_topic_id = forum_topic.id

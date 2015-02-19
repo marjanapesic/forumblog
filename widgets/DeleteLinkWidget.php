@@ -17,6 +17,10 @@ class DeleteLinkWidget extends HWidget {
      * @var type
      */
     public $object = null;
+    
+    public $title = null;
+    
+    public $message = null;
 
     /**
      * Executes the widget.
@@ -25,7 +29,9 @@ class DeleteLinkWidget extends HWidget {
         if ($this->object->content->canDelete()) {
             $this->render('deleteLink', array(
                'model' => $this->object,
-                'id' => $this->object->content->object_id
+                'id' => $this->object->content->object_id,
+                'title' => $this->title,
+                'message' => $this->message
             ));
        }
     }

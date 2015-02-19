@@ -42,17 +42,6 @@ class ForumController extends Controller
     public function actionCreate()
     {
         $model = new CreateForumTopicForm();
-        // $guid = (int) Yii::app()->request->getQuery('guid');
-    
-        /* $topic = ForumTopic::model()->findByAttributes(array('guid' => $guid));
-         if ($topic === null) {
-         $topic = new ForumTopic();
-         }
-    
-         if (!$topic->canAdminister()) {
-         throw new CHttpException(403, 'Page not editable!');
-        }*/
-    
     
         if (isset($_POST['ajax']) && $_POST['ajax'] === 'forum-topic-create-form') {
             echo CActiveForm::validate($model);
@@ -60,7 +49,7 @@ class ForumController extends Controller
         }
     
         if (isset($_POST['CreateForumTopicForm'])) {
-    
+  
             $model->attributes = $_POST['CreateForumTopicForm'];
     
             if ($model->validate()) {
@@ -71,19 +60,25 @@ class ForumController extends Controller
                     $space = Space::model()->findByAttributes(array('guid' => $model->space));
                     $topic->space_id = $space->id;
                 }
+                
+                if ($topic->space_id == null){
+                    $contentContainer = User::model()->findByAttributes(array('id' => Yii::app()->user->id));
+                    $topic->content->visibility=1;
+                }
+                else
+                    $contentContainer = Space::model()->findByAttributes(array('id' => $topic->space_id));
+                
+                $topic->content->container = $contentContainer;
+                
                 $topic->save();
     
                 $forumPost = new ForumPost();
                 $forumPost->forum_topic_id = $topic->id;
                 $forumPost->message = $model->message;
                 $forumPost->isFirstPost = 1;
-                if ($topic->space_id == null){
-                    $contentContainer = User::model()->findByAttributes(array('id' => Yii::app()->user->id));
+                if ($topic->space_id == null){   
                     $forumPost->content->visibility=1;
                 }
-                else
-                    $contentContainer = Space::model()->findByAttributes(array('id' => $topic->space_id));
-    
                 $forumPost->content->container = $contentContainer;
     
     
@@ -91,8 +86,7 @@ class ForumController extends Controller
     
                 File::attachPrecreated($forumPost, Yii::app()->request->getParam('fileUploaderHiddenGuidField'));
     
-                // Redirect to the new created Space
-                $this->htmlRedirect($this->createUrl('//forum/index'));
+                return $this->htmlRedirect($this->createUrl('//forum/index'));
     
             }
         }
@@ -110,9 +104,9 @@ class ForumController extends Controller
         if ($forumTopic == null)
             throw new CHttpException(404, Yii::t('Forum.controller_ForumController', 'Forum topic not found!'));
         
-        $model = new ForumPost();
+        //$model = new ForumPost();
         
-        if (isset($_POST['ForumPost'])) {
+        /*if (isset($_POST['ForumPost'])) {
             $_POST['ForumPost'] = Yii::app()->input->stripClean($_POST['ForumPost']);
             $model->attributes = $_POST['ForumPost'];
          
@@ -129,7 +123,7 @@ class ForumController extends Controller
                 $model->forum_topic_id = $forumTopic->id;
                 $model->save();
             }
-        }
+        }*/
         
         $posts = ForumPost::model()->findAllByAttributes(array('forum_topic_id'=> $forumTopic->id));
         foreach($posts as $post){
@@ -137,9 +131,41 @@ class ForumController extends Controller
         }
         
         $model = new ForumPost();
-        $this->render('displayTopic', array('topic' => $forumTopic, 'posts' => $posts, 'model' => $model));
+        $model->forum_topic_id = $forumTopic->id;
+        $user = User::model()->find(Yii::app()->user->id);
+        $this->render('displayTopic', array('topic' => $forumTopic, 'posts' => $posts, 'model' => $model, 'user'=> $user));
     } 
     
+    public function actionCreatePost() {
+        
+        $this->forcePostRequest();
+        
+        $model = new ForumPost();
+        
+        if (isset($_POST['ForumPost'])) {
+            $_POST['ForumPost'] = Yii::app()->input->stripClean($_POST['ForumPost']);
+            $model->attributes = $_POST['ForumPost'];
+            $model->forum_topic_id = $_POST['ForumPost']['forum_topic_id'];
+            
+            $forumTopic = ForumTopic::model()->findByPk($model->forum_topic_id);
+          
+            if ($forumTopic->space_id == null){
+                $contentContainer = User::model()->findByAttributes(array('id' => Yii::app()->user->id));
+                $model->content->visibility=1;
+            }
+            else
+                $contentContainer = Space::model()->findByAttributes(array('id' => $forumTopic->space_id));
+        
+            $model->content->container = $contentContainer;
+        
+            if ($model->validate()) {
+                //$model->forum_topic_id = $forumTopic->id;
+                $model->save();
+            }
+        }
+        $forumTopic = ForumTopic::model()->findByPk($model->forum_topic_id);
+         return $this->htmlRedirect($this->createUrl('//forum/forum/displayTopic', array('guid' => $forumTopic->guid)));
+    }
     
     public function actionPostEdit(){
     
@@ -159,28 +185,61 @@ class ForumController extends Controller
                     $model = ForumPost::model()->findByPk($id);
                     $model->message = $this->parseMarkdown($model->message);
                     // Return the new post
-                    $output = $this->widget('application.modules.forum.widgets.ForumPostWidget', array(
+                    /*$output = $this->widget('application.modules.forum.widgets.ForumPostWidget', array(
                         'post' => $model,
-                        'justEdited' => true
-                    ), true);
+                 
+                    ), true);*/
+                    $output = $this->renderPartial('/forum/post', array('post'=> $model));
                     Yii::app()->clientScript->render($output);
                     echo $output;
                     return;
                 }
             }
     
-            $this->renderPartial('postEdit', array(
-                'model' => $model,
-            ), false, true);
+            $output = $this->renderPartial('/forum/postEdit', array('post'=> $model), false, true);
         } else {
             throw new CHttpException(403, Yii::t('Forum.controllers_ForumController', 'Access denied!'));
         }
     }
     
     
+    public function actionTopicEdit(){
+    
+        //$this->forcePostRequest();
+
+        $id = Yii::app()->request->getParam('id');
+        
+        
+        $model = ForumTopic::model()->findByPk($id);
+    
+        if ($model->content->canWrite()) {
+    
+            if (Yii::app()->request->isPostRequest) {
+                $title = Yii::app()->input->stripClean(Yii::app()->request->getParam('title'));
+
+                $model->title = $title;
+          
+                if ($model->validate()) {
+                    $model->save();
+    
+                    // Reload record to get populated updated_at field
+                    $model = ForumTopic::model()->findByPk($id);
+                    $output = $this->renderPartial('/forum/topicEntry', array('topic' => $model, 'editable'=>false));
+                    Yii::app()->clientScript->render($output);
+                    echo $output;
+                    return;
+                }
+            }
+    
+            $this->renderPartial('/forum/topicEntry', array('topic' => $model, 'editable'=>true), false, true);
+        } else {
+            throw new CHttpException(403, Yii::t('Forum.controllers_ForumController', 'Access denied!'));
+        }
+    }
+    
     public function actionDelete() {
         
-        // $this->forcePostRequest();
+         $this->forcePostRequest();
 
         // Json Array
         $json = array();
@@ -194,11 +253,37 @@ class ForumController extends Controller
         if ($content->content->canDelete()) {
 
             if ($content->delete()) {
+                if(($model=="ForumPost" && $content->isFirstPost))
+                    return $this->htmlRedirect($this->createUrl('//forum/index'));
                 $json['success'] = true;
             }            
 
         }
 
+        echo CJSON::encode($json);
+        Yii::app()->end();
+    }
+    
+    public function actionDeleteTopic()
+    {
+        $this->forcePostRequest();
+        
+        // Json Array
+        $json = array();
+        $json['success'] = false;
+        
+        $id = (int) Yii::app()->request->getParam('id');
+        
+        $topic = ForumTopic::findByPk($id);
+        
+        if ($topic->content->canDelete()) {
+        
+            if ($topic->delete()) {
+                $json['success'] = true;
+            }
+        
+        }
+        
         echo CJSON::encode($json);
         Yii::app()->end();
     }
@@ -213,7 +298,7 @@ class ForumController extends Controller
     
         $this->renderPartial('preview', array('content' => $markdown));
     }
-    
+
     private function parseMarkdown($md)
     {
         $parser = new ForumMarkdown();
@@ -221,12 +306,7 @@ class ForumController extends Controller
     
         $purifier = new CHtmlPurifier();
         return $purifier->purify($html);
-    }
-
-    
-    
-    
+    }    
     
 }
-
 ?>
