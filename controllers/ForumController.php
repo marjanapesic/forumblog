@@ -132,7 +132,7 @@ class ForumController extends Controller
         
         $model = new ForumPost();
         $model->forum_topic_id = $forumTopic->id;
-        $user = User::model()->find(Yii::app()->user->id);
+        $user = User::model()->findByPk(Yii::app()->user->id);
         $this->render('displayTopic', array('topic' => $forumTopic, 'posts' => $posts, 'model' => $model, 'user'=> $user));
     } 
     
