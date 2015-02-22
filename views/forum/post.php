@@ -1,8 +1,8 @@
-<div class="panel panel-default post" id="<?php echo $post->getUniqueId(); ?>">
+<div id="<?php echo $post->getUniqueId(); ?>">
     <div class="panel-body">
-        <?php $this->beginContent('application.modules.forum.views.forum_layout', array('post' => $post)); ?>
+        <?php $this->beginContent('application.modules.forum.views.forum_post_layout', array('post' => $post)); ?>
 
-        <div class="wall-entry">
+        <div class="wall-entry" style="padding-top:15px;">
             <span id="post-content-<?php echo $post->id; ?>" style="display: block;">
                 <?php echo nl2br(trim($post->message)); ?>
             </span>
@@ -10,4 +10,5 @@
         
         <?php $this->endContent(); ?>
     </div>
+    <hr/>    
 </div>

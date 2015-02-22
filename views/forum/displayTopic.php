@@ -5,36 +5,28 @@
 			<div class="s2-streamContent">
 
 				<div class="panel">
-					<strong><?php echo $topic->title ?></strong>
-					
-					<!-- show space name -->
-                    <?php if ( $topic->space != null ): ?>
-                       - <a href="<?php echo $topic->space->getUrl(); ?>"><small><span class="time"><?php echo CHtml::encode($topic->space->name); ?></span></small></a>
-                    <?php endif; ?>                  
-                </div>
+					<h4 style="padding:10px;"><strong><?php echo $topic->title ?></strong></h4>
+               
 
-				<div class="wall-entry">
-                        <?php foreach ($posts as $post) {  
-                            
-                            echo $this->renderPartial('/forum/post', array(
-                                'post' => $post,
-                                //'editable' => false
-                            ));    
-                        }?>
-                      
-                 </div>
-                 
-                 <div class="wall-entry">
-                 <?php
-                 echo $this->renderPartial('/forum/postNew', array(
-                     'post' => $model,
-                     'user' => $user,
+    				<div class="wall-entry">
+                            <?php foreach ($posts as $post) {  
+                                
+                                echo $this->renderPartial('/forum/post', array(
+                                    'post' => $post
+                                ));        
+                            }?>
+                          
+                     </div>
                    
-                     //'editable' => false
-                 ));
-                   ?>
+                     <div class="wall-entry">
+                     <?php
+                     echo $this->renderPartial('/forum/postNew', array(
+                         'post' => $model,
+                         'user' => $user,
+                     ));
+                       ?>
+                     </div>
                  </div>
-
 			</div>
 
 		</div>

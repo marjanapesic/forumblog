@@ -1,4 +1,4 @@
-<div class="panel panel-default post" id="newForumPost">
+<div  id="newForumPost">
     <div class="panel-body">
     
         <div class="media">
@@ -19,7 +19,6 @@
                 <h5><?php echo CHtml::encode($user->profile->title); ?></h5>
         
             </div>
-            <hr/>
         
             <!-- show content -->
             <div class="content" id="wall_content_newForumPost" >
@@ -30,8 +29,8 @@
                     'action' => Yii::app()->createUrl('//forum/forum/createPost')
                 ));?>
                 <?php echo $form->hiddenField($post, 'forum_topic_id');?>
-                <div class="form-group">
-                    <?php echo $form->textArea($post, 'message', array('class' => 'form-control', 'id' => 'pageContentNewPost', 'rows' => '5', 'placeholder' => Yii::t('ForumModule.base', 'Content')));?> 
+                <div class="form-group" style="padding-top:15px;">
+                    <?php echo $form->textArea($post, 'message', array('class' => 'form-control', 'id' => 'pageContentNewPost', 'rows' => '10', 'placeholder' => Yii::t('ForumModule.base', 'Content')));?> 
                     <?php $this->widget('application.modules.forum.widgets.MarkdownWidget', array(
                             'form' => $form,
                             'id' => "NewPost"

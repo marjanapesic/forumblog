@@ -11,7 +11,7 @@
             <?php
             $form = $this->beginWidget('CActiveForm', array(
                 'id' => 'forum-topic-create-form',
-                'enableAjaxValidation' => false,
+                'enableAjaxValidation' => true,
             ));
             ?>
 
@@ -28,19 +28,19 @@
            
             
             <?php echo $form->labelEx($model, 'message');?>
-            <?php echo $form->textArea($model, 'message', array('class' => 'form-control', 'id' => 'pageContentnewTopic', 'rows' => '5', 'placeholder' => Yii::t('ForumModule.base', 'Content')));?> 
+            <?php echo $form->textArea($model, 'message', array('class' => 'form-control', 'id' => 'pageContentnewTopic', 'rows' => '23', 'placeholder' => Yii::t('ForumModule.base', 'Content')));?> 
             <?php $this->widget('application.modules.forum.widgets.MarkdownWidget', array('id' => 'newTopic')); ?>
             
-             <?php echo $form->labelEx($model, 'space'); ?>
-            <?php echo $form->textField($model, 'space', array('class' => 'form-control', 'id' => 'space_select')); ?>
+             <?php //echo $form->labelEx($model, 'space'); ?>
+            <?php //echo $form->textField($model, 'space', array('class' => 'form-control', 'id' => 'space_select')); ?>
             <?php
-            $this->widget('application.modules_core.space.widgets.SpacePickerWidget', array(
+           /* $this->widget('application.modules_core.space.widgets.SpacePickerWidget', array(
                 'spaceSearchUrl' => $this->createUrl('//forum/index/searchSpace', array('keyword' => '-keywordPlaceholder-', 'guid'=>Yii::app()->user->guid)),
                 'inputId' => 'space_select',
                 'model' => $model,
                 'attribute' => 'space',
                 'maxSpaces' => 1
-            ));?>
+            ));*/?>
 
             <?php echo CHtml::submitButton(Yii::t('ForumModule.base', 'Save'), array('class' => 'btn btn-primary')); ?>
             <?php $this->endWidget(); ?>

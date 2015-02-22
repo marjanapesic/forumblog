@@ -12,14 +12,13 @@
  * @property string $updated_at
  * @property integer $updated_by
  *
- * @package humhub.modules.forumblog.models
+ * @package humhub.modules.forum.models
  * @since 0.5
  */
-class ForumPost extends HActiveRecordContent
+class ForumPost extends HActiveRecord
 {
-    public $autoAddToWall = false;
+
     public $editRoute = '//forum/forum/postEdit';
-    public $autoAddToActivity = false;
     
     /**
      * Returns the static model of the specified AR class.
@@ -63,22 +62,6 @@ class ForumPost extends HActiveRecordContent
     }
     
 
-    public function getContentTitle()
-    {
-        //return Yii::app()->getController()->widget('application.modules_core.post.widgets.PostWidget', array('post' => $this), true);
-        return Yii::t('ForumBlogModule.models_ForumPost', 'Forum Post') . " \"" . Helpers::truncateText($this->message, 60) . "\" ".
-                Yii::t('ForumBlogModule.models_ForumPost', '(on topic')." \"".$this->topic->title."\")";
-    }
-    
-  
-    public function afterSave()
-    {
-            
-            parent::afterSave();
-            //$this->content->addToWall($this->topic->wall_id);
-    }
-   
-
     public function afterDelete(){
         if((int)$this->isFirstPost){
             $topic = ForumTopic::model()->findByPk($this->forum_topic_id);
@@ -86,5 +69,33 @@ class ForumPost extends HActiveRecordContent
                 $topic->delete();
         }
         return parent::afterDelete();
+    }
+    
+    
+    public function canWrite($userId = "")
+    {
+        if ($userId == "")
+            $userId = Yii::app()->user->id;
+    
+        if ($this->created_by == $userId)
+            return true;
+    
+        return false;
+    }
+    
+    public function canDelete($userId = "")
+    {
+    
+        if ($userId == "")
+            $userId = Yii::app()->user->id;
+    
+        if ($this->created_by == $userId)
+            return true;
+    
+        if (Yii::app()->user->isAdmin()) {
+            return true;
+        }
+    
+        return false;
     }
 }

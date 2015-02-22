@@ -12,13 +12,12 @@
  * @property string $updated_at
  * @property integer $updated_by
  *
- * @package humhub.modules.forumblog.models
+ * @package humhub.modules.forum.models
  * @since 0.5
  */
-class ForumTopic extends HActiveRecordContent
+class ForumTopic extends HActiveRecord
 {
     
-    public $addToActivity = false;
     public $editRoute = '//forum/forum/topicEdit';
     
     public function behaviors()
@@ -70,7 +69,6 @@ class ForumTopic extends HActiveRecordContent
             'space' => array(self::BELONGS_TO, 'Space', 'space_id'),
             'createdBy' => array(self::BELONGS_TO, 'User', 'created_by'),
             'updatedBy' => array(self::BELONGS_TO, 'User', 'updated_by'),
-            'wall' => array(self::BELONGS_TO, 'Wall', 'wall_id'),
         );
     }
 
@@ -80,31 +78,10 @@ class ForumTopic extends HActiveRecordContent
     public function attributeLabels()
     {
         return array(
-            'id' => 'ID',
-            'space_id' => Yii::t('ForumBlogModule.models_ForumTopic', 'Space'),
-            'title' => Yii::t('SpaceModule.models_Space', 'Title'),
-            'created_at' => Yii::t('SpaceModule.models_Space', 'Created At'),
-            'created_by' => Yii::t('SpaceModule.models_Space', 'Created By'),
-            'updated_at' => Yii::t('SpaceModule.models_Space', 'Updated At'),
-            'updated_by' => Yii::t('SpaceModule.models_Space', 'Updated by'),
+            'message' => Yii::t('ForumModel.models_ForumTopic', 'Post'),
+            'title' => Yii::t('ForumModel.models_ForumTopic', 'Title'),    
         );
     }
-    
-
-   /* public function afterSave() {
-        // Create new wall record for this user
-        $wall = new Wall();
-       
-        $wall->type =  ($this->space_id) ? Wall::TYPE_SPACE : Wall::TYPE_USER;
-        $wall->object_model = 'ForumTopic';
-        $wall->object_id = $this->id;
-        $wall->save();
-    
-        $this->wall_id = $wall->id;
-        $this->wall = $wall;
-        ForumTopic::model()->updateByPk($this->id, array('wall_id' => $wall->id));
-    }*/
-    
     
     public function getLastEntry() {
     
@@ -121,6 +98,7 @@ class ForumTopic extends HActiveRecordContent
         return $this->createUrl('//forum/forum/displayTopic', $parameters);
     }
     
+    
     public function createUrl($route, $params = array(), $ampersand = '&')
     {
         if (!isset($params['guid'])) {
@@ -135,20 +113,7 @@ class ForumTopic extends HActiveRecordContent
     }
     
     
-    public function canWrite($userId = "")
-    {
-
-        if($this->space_id){
-            $space = Space::model()->findByPk($this->space_id);
-            
-            if ($userId == "")
-                $userId = Yii::app()->user->id;
-            return $space->isMemeber($userId);
-        }
-        
-        return true;
-    }
-    
+       
     public function canRead($userId = "")
     {
     
@@ -163,6 +128,21 @@ class ForumTopic extends HActiveRecordContent
         return true;
     }
     
+    public function canDelete($userId = "")
+    {
+    
+        if ($userId == "")
+            $userId = Yii::app()->user->id;
+    
+        if ($this->created_by == $userId)
+            return true;
+    
+        if (Yii::app()->user->isAdmin()) {
+            return true;
+        }
+    
+        return false;
+    }
     
     public function canAdminister(){
         
@@ -182,23 +162,21 @@ class ForumTopic extends HActiveRecordContent
         return parent::afterDelete();
     }
     
+    public function canWrite($userId = "")
+    {
+        if ($userId == "")
+            $userId = Yii::app()->user->id;
     
-   /* public function  createPost() {
-        
-        $post = new ForumPost();
-        $rev->user_id = Yii::app()->user->id;
-        $rev->revision = time();
-        
-        $lastRevision = WikiPageRevision::model()->findByAttributes(array('is_latest' => 1, 'wiki_page_id' => $this->id));
-        if ($lastRevision !== null) {
-            $rev->content = $lastRevision->content;
-        }
-        
-        if (!$this->isNewRecord) {
-            $rev->wiki_page_id = $this->id;
-        }
-        
-        
-        return $rev;
-    }*/
+        if ($this->created_by == $userId)
+            return true;
+    
+        return false;
+    }
+    
+    public function postsCount()
+    {
+        return ForumPost::model()->countByAttributes(array(
+            'forum_topic_id'=> $this->id
+        ));
+    }
 }

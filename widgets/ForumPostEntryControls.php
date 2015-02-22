@@ -1,6 +1,6 @@
 <?php
 
-class ForumPostEntryControls extends StackWidget {
+class ForumPostEntryControls extends HWidget {
 
     /**
      * Object derived from HActiveRecordContent
@@ -9,22 +9,17 @@ class ForumPostEntryControls extends StackWidget {
      */
     public $object = null;
 
-    public function init(){
+    /**
+     * Executes the widget.
+     */
+    public function run()
+    {
         
-        $message = Yii::t('ForumBlog.widgets_views_deleteLink', 'Do you really want to delete this post? All likes and comments will be lost!');
-        if($this->object->isFirstPost)
-            $message .= " ".Yii::t('ForumBlog.widgets_views_deleteLink', 'By deleting this post the <strong>whole topic will be deleted</strong>!');
-        $this->addWidget('application.modules.forum.widgets.DeleteLinkWidget', array(
-            'object' => $this->object,
-            'title' => Yii::t('ForumBlog.widgets_views_deleteLink', '<strong>Confirm</strong> post deletion'),
-            'message' => $message
-            )
-        );
-        
-        $this->addWidget('application.modules.forum.widgets.EditLinkWidget', array(
-            'object' => $this->object
-            )
-        );
+        if (($this->object->editRoute != "" && $this->object->canWrite()) || $this->object->canDelete()) {
+            $this->render('forumPostEntryControls', array(
+                'object' => $this->object,
+            ));
+        }    
     }
     
 }

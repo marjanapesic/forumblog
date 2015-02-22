@@ -7,19 +7,20 @@
 				<div class="panel-heading">
                     <?php echo Yii::t('ForumModule.views_index_index', 'Forum'); ?>
                     <div class='pull-right'>
-                        <?php echo HHtml::link(Yii::t('ForumModule.views_index_index', 'New topic'), $this->createUrl('//forum/forum/create'))?>
+                        <?php echo HHtml::link(Yii::t('ForumModule.views_forum_index', 'New topic'), $this->createUrl('//forum/forum/create'))?>
                     </div>
 
 				</div>
 
 
 				<div class="panel-body">
-
 					<hr>
-					<?php if(count($userTopics) ==0) echo Yii::t('ForumModule.view_index_index', "There are no forum topics yet."); ?>
+					<?php if(count($userTopics) ==0) echo Yii::t('ForumModule.views_forum_index', "There are no forum topics yet."); ?>
 		            <?php foreach ($userTopics as $topic) {?>
-            
-                            <?php $this->renderPartial('/forum/topicEntry', array('topic' => $topic, 'editable'=>false));?>
+                            <?php /*$topicModel = new ForumTopic();
+                            $topicModel->attributes = $topic;
+                            $topicModel->id=$topic['id'];*/ ?>
+                            <?php $this->renderPartial('/forum/topic', array('topic' => $topic, 'editable'=>false));?>
                             
                         <?php }?>
                

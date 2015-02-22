@@ -12,7 +12,6 @@ Yii::app()->moduleManager->register(array(
     // Events to Catch 
     'events' => array(
         array('class' => 'TopMenuWidget', 'event' => 'onInit', 'callback' => array('ForumModule', 'onTopMenuInit')),
-        //array('class' => 'ForumTopicEntryControls', 'event' => 'onInit', 'callback' => array('ForumBlogModule', 'onForumTopicEntryControlsInit')),
     ),
 ));
 ?>

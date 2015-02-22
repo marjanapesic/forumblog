@@ -16,25 +16,7 @@ class ForumModule extends HWebModule
     {
         $this->setImport(array('forum.components.*'));
         
-        require_once(dirname(__FILE__) . '/vendors/cebe/markdown/inline/CodeTrait.php');
-        require_once(dirname(__FILE__) . '/vendors/cebe/markdown/inline/EmphStrongTrait.php');
-        require_once(dirname(__FILE__) . '/vendors/cebe/markdown/inline/LinkTrait.php');
-        require_once(dirname(__FILE__) . '/vendors/cebe/markdown/inline/StrikeoutTrait.php');
-        require_once(dirname(__FILE__) . '/vendors/cebe/markdown/inline/UrlLinkTrait.php');
-        
-        require_once(dirname(__FILE__) . '/vendors/cebe/markdown/block/CodeTrait.php');
-        require_once(dirname(__FILE__) . '/vendors/cebe/markdown/block/FencedCodeTrait.php');
-        require_once(dirname(__FILE__) . '/vendors/cebe/markdown/block/HeadlineTrait.php');
-        require_once(dirname(__FILE__) . '/vendors/cebe/markdown/block/HtmlTrait.php');
-        require_once(dirname(__FILE__) . '/vendors/cebe/markdown/block/ListTrait.php');
-        require_once(dirname(__FILE__) . '/vendors/cebe/markdown/block/QuoteTrait.php');
-        require_once(dirname(__FILE__) . '/vendors/cebe/markdown/block/RuleTrait.php');
-        require_once(dirname(__FILE__) . '/vendors/cebe/markdown/block/TableTrait.php');
-        
-        require_once(dirname(__FILE__) . '/vendors/cebe/markdown/Parser.php');
-        require_once(dirname(__FILE__) . '/vendors/cebe/markdown/Markdown.php');
-        require_once(dirname(__FILE__) . '/vendors/cebe/markdown/MarkdownExtra.php');
-        require_once(dirname(__FILE__) . '/vendors/cebe/markdown/GithubMarkdown.php');
+        Yii::setPathOfAlias('cebe',Yii::getPathOfAlias('forum.vendors.cebe'));
         
         return parent::init();
     }
@@ -52,34 +34,12 @@ class ForumModule extends HWebModule
                 'label' => Yii::t('ForumModule.base', 'Forum'),
                 'id' => 'forum',
                 'icon' => '<i class="fa fa-bars"></i>',
-                'url' => Yii::app()->createUrl('//forum/index'),
+                'url' => Yii::app()->createUrl('//forum/forum'),
                 'sortOrder' => 500
             ));
-            
-           /* $event->sender->addItem(array(
-                'label' => Yii::t('ForumBlogModule.base', 'Blog'),
-                'id' => 'forum',
-                'icon' => '<i class="fa fa-files-o"></i>',
-                'url' => Yii::app()->createUrl('//forumblog/blog'),
-                'sortOrder' => 501,
-            ));*/
-            
+                       
         }
     }
 
-    public static function onForumTopicEntryControlsInit($event)
-    {
-        $event->sender->addWidget('application.modules.forum.widgets.DeleteLinkWidget', array(
-            'object' => $event->sender->object
-        )
-        );
-        
-        $event->sender->addWidget('application.modules.forum.widgets.EditLinkWidget', array(
-            'object' => $event->sender->object
-        )
-        );
-    }
-
- 
 }
 ?>
